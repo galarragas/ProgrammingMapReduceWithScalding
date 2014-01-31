@@ -31,7 +31,7 @@ class ExternalServiceImpl extends ExternalService {
 }
 
 
-trait LateBoundTransformations extends FieldConversions with TupleConversions {
+trait LateBindingTransformations extends FieldConversions with TupleConversions {
   import Dsl._
 
   def self: Pipe
@@ -47,7 +47,7 @@ trait LateBoundTransformations extends FieldConversions with TupleConversions {
 }
 
 object LateBindingTransformations {
-  implicit class LateBindingTransformationsWrapper(val self: Pipe) extends LateBoundTransformations with Serializable {
+  implicit class LateBindingTransformationsWrapper(val self: Pipe) extends LateBindingTransformations with Serializable {
     lazy val externalService = new ExternalServiceImpl
   }
   implicit def fromRichPipe(richPipe: RichPipe) = new LateBindingTransformationsWrapper(richPipe.pipe)
@@ -65,7 +65,7 @@ class LateBindingSampleJob(args: Args) extends Job(args) {
 
 object ConstructorLazilyInjectedTransformationsWrappers {
   type ExternalServiceFactory = () => ExternalService
-  implicit class ConstructorLazilyInjectedTransformationsWrapper(val self: Pipe)(implicit externalServiceFactory : ExternalServiceFactory) extends LateBoundTransformations {
+  implicit class ConstructorLazilyInjectedTransformationsWrapper(val self: Pipe)(implicit externalServiceFactory : ExternalServiceFactory) extends LateBindingTransformations {
     lazy val externalService : ExternalService = externalServiceFactory()
   }
   implicit def fromRichPipe(richPipe: RichPipe)(implicit externalServiceFactory : ExternalServiceFactory) = new ConstructorLazilyInjectedTransformationsWrapper(richPipe.pipe)
@@ -83,7 +83,7 @@ class ConstructorInjectingSampleJob(args: Args) extends Job(args) {
 }
 
 object FrameworkLazilyInjectedTransformationsWrappers {
-  implicit class FrameworkInjectedTransformationsWrapper(val self: Pipe)(implicit val bindingModule : BindingModule) extends LateBoundTransformations with Injectable with Serializable {
+  implicit class FrameworkInjectedTransformationsWrapper(val self: Pipe)(implicit val bindingModule : BindingModule) extends LateBindingTransformations with Injectable with Serializable {
     val externalService = inject[ExternalService]
   }
   implicit def fromRichPipe(richPipe: RichPipe)(implicit bindingModule : BindingModule) = new FrameworkInjectedTransformationsWrapper(richPipe.pipe)
